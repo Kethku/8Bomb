@@ -1,3 +1,3 @@
 clean: rm index*; rm src.*
 dev: parcel src/index.html -d .
-build: parcel build src/index.html -d .
+build: parcel build src/index.html -d . --public-url ./8Bomb/
