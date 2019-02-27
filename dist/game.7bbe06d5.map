@@ -1,0 +1,1 @@
+{"version":3,"sources":["game.js"],"names":["alert"],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAAA,KAAK,CAAC,cAAD,CAAL","file":"game.7bbe06d5.map","sourceRoot":"..","sourcesContent":["alert(\"hello world!\");\r\n"]}
