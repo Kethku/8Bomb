@@ -70,12 +70,35 @@ window.draw = () => {};
 window.update = () => {};
 window.sprites = {};
 
+let currentKeys = new Set();
+
+document.addEventListener('keydown', ({ key }) => currentKeys.add(key));
+document.addEventListener('keyup', ({ key }) => currentKeys.delete(key));
+
 eval(gameCode);
 
+let previousInput = {};
+let state = window.initialState;
 function loop() {
-  let state = window.initialState;
+  let input = {};
 
-  window.update(state, {});
+  let keyNames = {
+    "up": "ArrowUp",
+    "right": "ArrowRight",
+    "down": "ArrowDown",
+    "left": "ArrowLeft",
+    "a": "a",
+    "b": "b"
+  };
+
+  for (let key in keyNames) {
+    input[key] = currentKeys.has(keyNames[key]);
+    input[key + "Pressed"] = input[key] && !previousInput[key];
+    input[key + "Released"] = !input[key] && previousInput[key];
+  }
+  previousInput = input;
+
+  window.update(state, input);
   window.draw(state);
   requestAnimationFrame(loop);
 }
