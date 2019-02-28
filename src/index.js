@@ -4,14 +4,14 @@ import { initialState, draw, update } from "./game/game";
 
 let currentKeys = new Set();
 
-document.addEventListener('keydown', ({ key, stopPropagation }) => {
-  stopPropagation();
-  currentKeys.add(key);
+document.addEventListener('keydown', (event) => {
+  currentKeys.add(event.key);
+  event.preventDefault();
 });
 
-document.addEventListener('keyup', ({ key, stopPropagation }) => {
-  stopPropagation();
-  currentKeys.delete(key);
+document.addEventListener('keyup', (event) => {
+  currentKeys.delete(event.key);
+  event.preventDefault();
 });
 
 let previousInput = {};
