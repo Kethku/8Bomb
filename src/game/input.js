@@ -21,4 +21,8 @@ export function handleInput(input, player, terrain) {
     player.previous.y += jumpSpeed;
     player.jumpReady = false;
   }
+
+  if (input.a) {
+    cutTerrain(player.position.x, player.position.y, 30);
+  }
 }

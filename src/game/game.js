@@ -6,12 +6,14 @@ import * as updateFunctions from "./update";
 import * as drawFunctions from "./draw";
 import { updateTerrain, drawTerrain } from "./terrain";
 import * as bombFunctions from "./bombs";
+import { updateExplosions, drawExplosions } from "./explosion";
 
 import { createPhysicsObject } from "./utils";
 
 export const initialState = {
   player: createPhysicsObject(20, 20, 0),
   bombs: [],
+  explosions: [],
   cameraY: 0,
   score: 0
 };
@@ -25,6 +27,8 @@ export function update(state, input) {
   updateFunctions.handleTerrainCollisions(state.terrain, physicsObjects);
   updateFunctions.updateCamera(state);
   updateFunctions.updateScore(state);
+
+  updateExplosions();
 
   handleInput(input, state.player, state.terrain);
 
@@ -40,5 +44,6 @@ export function draw (state) {
   drawFunctions.drawPhysicsObjects(physicsObjects);
   drawFunctions.drawScoreMarker(state);
   drawFunctions.drawInstructions(state);
+  drawExplosions();
   drawFunctions.drawScore(state);
 }

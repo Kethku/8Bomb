@@ -1,5 +1,6 @@
 import { getPhysicsObjects, createPhysicsObject } from "./utils";
 import { cutTerrain } from "./terrain";
+import { newExplosion } from "./explosion";
 
 const fuzeTime = 100;
 const fuzeSpeed = 0.75;
@@ -52,6 +53,8 @@ export function updateBombs(state) {
   let physicsObjects = getPhysicsObjects(state);
   for (const bomb of bombsToExplode) {
     cutTerrain(bomb.position.x, bomb.position.y, bombRadius, state.terrain);
+    newExplosion(bomb.position.x, bomb.position.y);
+
     for (const object of physicsObjects) {
       // Find the distance to the object
       let dx = object.position.x - bomb.position.x;
