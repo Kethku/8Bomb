@@ -19,14 +19,21 @@ let state = initialState;
 function loop() {
   let input = {};
 
+  let reflexiveKeys = [
+    "a", "s", "d", "w",
+    "i", "j", "k", "l"
+  ];
+
   let keyNames = {
     "up": "ArrowUp",
     "right": "ArrowRight",
     "down": "ArrowDown",
     "left": "ArrowLeft",
-    "a": "a",
-    "b": "b"
   };
+
+  for (let reflexiveKey of reflexiveKeys) {
+    keyNames[reflexiveKey] = reflexiveKey;
+  }
 
   for (let key in keyNames) {
     input[key] = currentKeys.has(keyNames[key]);

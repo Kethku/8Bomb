@@ -1,24 +1,31 @@
-import { getPhysicsObjects, createPhysicsObject } from "./utils";
 import { cutTerrain } from "./terrain";
 import { newExplosion } from "./explosion";
+import { player } from "./player";
+import { score } from "./score";
+import { createPhysicsObject, getPhysicsObjects, PhysicsObjects } from "./physics";
+import { Update } from "./events";
 
 const fuzeTime = 100;
 const fuzeSpeed = 0.75;
 const bombRadius = 30;
 const knockBack = 50;
 
-export function spawnBombs({ player,  bombs, score }) {
-  if (Math.random() * 100 <= score / 400 + 0.5) {
+let bombs = [];
+
+PhysicsObjects.Subscribe(() => bombs);
+
+export function spawnBombs() {
+  if (Math.random() * 100 <= score / 800 + 0.25) {
     bombs.push(createPhysicsObject(Math.random() * 112 + 8, player.position.y - 300, 2));
   }
 }
 
-export function updateBombs(state) {
+export function updateBombs() {
   let bombsToExplode = [];
   let remainingBombs = [];
 
   // Update Bomb Timers
-  for (const bomb of state.bombs) {
+  for (const bomb of bombs) {
     if (bomb.timeLeft != undefined) {
       // Reset Bomb Sprite
       bomb.sprite = 2;
@@ -47,12 +54,12 @@ export function updateBombs(state) {
     remainingBombs.push(bomb);
   }
   // Preserve all remaining bombs
-  state.bombs = remainingBombs;
+  bombs = remainingBombs;
 
   // Blog up bombs
-  let physicsObjects = getPhysicsObjects(state);
+  let physicsObjects = getPhysicsObjects();
   for (const bomb of bombsToExplode) {
-    cutTerrain(bomb.position.x, bomb.position.y, bombRadius, state.terrain);
+    cutTerrain(bomb.position.x, bomb.position.y, bombRadius);
     newExplosion(bomb.position.x, bomb.position.y);
 
     for (const object of physicsObjects) {
@@ -63,7 +70,7 @@ export function updateBombs(state) {
 
       // If the object is the player, and the length is less than 3/4 of the
       // bomb radius, the player has lost.
-      if (object == state.player && length < bombRadius * 0.75) location.reload();
+      if (object == player && length < bombRadius * 0.75) location.reload();
 
       // Otherwise knockback the object by the distance * knockBack / length^2;
       let lengthSquared = length * length;
@@ -72,3 +79,8 @@ export function updateBombs(state) {
     }
   }
 }
+
+Update.Subscribe(() => {
+  spawnBombs();
+  updateBombs();
+})

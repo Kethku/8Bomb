@@ -1,7 +1,10 @@
 import { setPixel } from "../canvasApi";
+import { shakeCamera } from "./camera";
+import { Update, DrawWorld } from "./events";
 
-const startingRadius = 30;
-const animationSpeed = 2;
+const shakeAmount = 20;
+const startingRadius = 25;
+const animationSpeed = 3;
 
 let explosions = [];
 
@@ -11,17 +14,19 @@ export function newExplosion(x, y) {
     y,
     r: startingRadius,
     c: 0,
-    delay: 5
+    delay: animationSpeed
   });
+
+  shakeCamera(shakeAmount);
 }
 
-export function updateExplosions() {
+Update.Subscribe(() => {
   let remainingExplosions = [];
 
   for (let explosion of explosions) {
     if (explosion.delay > 0) {
       explosion.delay--;
-      remainingExplosions.push(explosion)
+      remainingExplosions.push(explosion);
     } else {
       if (explosion.c == 7) continue;
       remainingExplosions.push(explosion);
@@ -32,9 +37,9 @@ export function updateExplosions() {
   }
 
   explosions = remainingExplosions;
-}
+});
 
-export function drawExplosions() {
+DrawWorld.Subscribe(() => {
   for (let explosion of explosions) {
     for (let x = explosion.x - explosion.r; x < explosion.x + explosion.r; x++) {
       for (let y = explosion.y - explosion.r; y < explosion.y + explosion.r; y++) {
@@ -48,4 +53,4 @@ export function drawExplosions() {
       }
     }
   }
-}
+});

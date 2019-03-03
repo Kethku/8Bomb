@@ -1,4 +1,6 @@
 import { setPixel } from "../canvasApi";
+import { Update, DrawWorld } from "./events";
+import { cameraY } from "./camera";
 
 const panelHeight = 100;
 const panelWidth = 128;
@@ -6,43 +8,6 @@ const terrainStart = 70;
 
 let lowestPanel = 0;
 let terrain = {};
-
-function createPanel() {
-  let panel = [];
-  let stones = [];
-  for (let y = 0; y < 100; y++) {
-    let row = [];
-    for (let x = 0; x < 128; x++) {
-      row.push(true);
-    }
-    panel.push(row);
-  }
-
-  for (let i = 0; i < 10; i++) {
-    if (Math.random() * 100 < 40) {
-      stones.push({
-        x: Math.random() * 128,
-        y: Math.random() * panelHeight,
-        r: Math.random() * 5,
-        c: Math.floor(Math.random() * 3) + 4
-      });
-    }
-  }
-  panel.stones = stones;
-  return panel;
-}
-
-export function updateTerrain(cameraY) {
-  let panelTop = Math.floor(cameraY / panelHeight) - 1;
-  let panelBottom = panelTop + 5;
-
-  for (let i = panelTop; i < panelBottom; i++) {
-    if (!terrain[i]) {
-      terrain[i] = createPanel();
-      if (lowestPanel < i) lowestPanel = i;
-    }
-  }
-}
 
 export function terrainAt(x, y) {
   if (y < terrainStart) return false;
@@ -107,7 +72,44 @@ export function cutTerrain(x, y, r) {
   }
 }
 
-export function drawTerrain(cameraY) {
+function createPanel() {
+  let panel = [];
+  let stones = [];
+  for (let y = 0; y < 100; y++) {
+    let row = [];
+    for (let x = 0; x < 128; x++) {
+      row.push(true);
+    }
+    panel.push(row);
+  }
+
+  for (let i = 0; i < 10; i++) {
+    if (Math.random() * 100 < 40) {
+      stones.push({
+        x: Math.random() * 128,
+        y: Math.random() * panelHeight,
+        r: Math.random() * 5,
+        c: Math.floor(Math.random() * 3) + 4
+      });
+    }
+  }
+  panel.stones = stones;
+  return panel;
+}
+
+Update.Subscribe(() => {
+  let panelTop = Math.floor(cameraY / panelHeight) - 1;
+  let panelBottom = panelTop + 5;
+
+  for (let i = panelTop; i < panelBottom; i++) {
+    if (!terrain[i]) {
+      terrain[i] = createPanel();
+      if (lowestPanel < i) lowestPanel = i;
+    }
+  }
+});
+
+DrawWorld.Subscribe(() => {
   let top = Math.max(0, Math.floor(cameraY));
   let bottom = Math.floor(cameraY + 128);
   for (let y = top; y < bottom; y++) {
@@ -117,4 +119,4 @@ export function drawTerrain(cameraY) {
       }
     }
   }
-}
+});
