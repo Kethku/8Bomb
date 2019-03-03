@@ -4,6 +4,8 @@ import { sprite, setPixel } from "../canvasApi";
 import { Update, DrawWorld } from "./events";
 import { terrainAt } from "./terrain";
 
+import Vector from "./vector";
+
 const gravity = 0.06;
 const groundFriction = 0.99;
 const maxSpeed = 5;
@@ -16,14 +18,8 @@ export function getPhysicsObjects() {
 
 export function createPhysicsObject(x, y, sprite, radius = 4) {
   return {
-    previous: {
-      x,
-      y
-    },
-    position: {
-      x,
-      y
-    },
+    previous: new Vector(x, y),
+    position: new Vector(x, y),
     radius,
     sprite,
     grounded: false
@@ -31,48 +27,43 @@ export function createPhysicsObject(x, y, sprite, radius = 4) {
 }
 
 function* getBorderPixels() {
-  yield { x: -3.5, y: 0.5 };
-  yield { x: -3.5, y: 1.5 };
-  yield { x: -2.5, y: 2.5 };
-  yield { x: -1.5, y: 3.5 };
-  yield { x: -0.5, y: 3.5 };
-  yield { x: 0.5, y: 3.5 };
-  yield { x: 1.5, y: 3.5 };
-  yield { x: 2.5, y: 2.5 };
-  yield { x: 3.5, y: 1.5 };
-  yield { x: 3.5, y: 0.5 };
-  yield { x: 3.5, y: -0.5 };
-  yield { x: 3.5, y: -1.5 };
-  yield { x: 2.5, y: -2.5 };
-  yield { x: 1.5, y: -3.5 };
-  yield { x: 0.5, y: -3.5 };
-  yield { x: -0.5, y: -3.5 };
-  yield { x: -1.5, y: -3.5 };
-  yield { x: -2.5, y: -2.5 };
-  yield { x: -3.5, y: -1.5 };
-  yield { x: -3.5, y: -0.5 };
+  yield new Vector(-3.5, 0.5);
+  yield new Vector(-3.5, 1.5);
+  yield new Vector(-2.5, 2.5);
+  yield new Vector(-1.5, 3.5);
+  yield new Vector(-0.5, 3.5);
+  yield new Vector(0.5, 3.5);
+  yield new Vector(1.5, 3.5);
+  yield new Vector(2.5, 2.5);
+  yield new Vector(3.5, 1.5);
+  yield new Vector(3.5, 0.5);
+  yield new Vector(3.5, -0.5);
+  yield new Vector(3.5, -1.5);
+  yield new Vector(2.5, -2.5);
+  yield new Vector(1.5, -3.5);
+  yield new Vector(0.5, -3.5);
+  yield new Vector(-0.5, -3.5);
+  yield new Vector(-1.5, -3.5);
+  yield new Vector(-2.5, -2.5);
+  yield new Vector(-3.5, -1.5);
+  yield new Vector(-3.5, -0.5);
 }
 
 function updateVelocities(physicsObjects) {
   for (const obj of physicsObjects) {
-    let vx = obj.position.x - obj.previous.x;
-    let vy = obj.position.y - obj.previous.y;
+    let velocity = obj.position.subtract(obj.previous);
+    let speed = velocity.length;
 
-    let speed = Math.sqrt(vx * vx + vy * vy);
     if (speed > maxSpeed) {
-      vx = vx * maxSpeed / speed;
-      vy = vy * maxSpeed / speed;
+      velocity = velocity.multiply(maxSpeed).divide(speed);
     } else if(obj.grounded) {
-      vx = vx * groundFriction;
-      vy = vy * groundFriction;
+      velocity = velocity.multiply(groundFriction);
     }
 
-    obj.previous.x = obj.position.x;
-    obj.previous.y = obj.position.y;
-    vy += gravity;
+    obj.previous = obj.position;
+    velocity.y += gravity;
 
-    obj.position.x += vx;
-    obj.position.y += vy;
+    obj.position = obj.position.add(velocity);
 
     if (obj.position.x - obj.radius < 0) {
       obj.position.x = obj.radius;
@@ -86,19 +77,16 @@ function updateVelocities(physicsObjects) {
 
 function resolveTerrainCollisions(physicsObjects) {
   for (const obj of physicsObjects) {
-    let totalX = 0;
-    let totalY = 0;
+    let total = Vector.zero;
     let count = 0;
-    for (let { x: dx, y: dy } of getBorderPixels()) {
-      let x = Math.floor(obj.position.x + Math.floor(dx));
-      let y = Math.floor(obj.position.y + Math.floor(dy));
+    for (let positionOffset of getBorderPixels()) {
+      let testPosition = obj.position.add(positionOffset.floor()).floor();
 
-      if (terrainAt(x, y)) {
-        if (dy > 3) {
+      if (terrainAt(testPosition.x, testPosition.y)) {
+        if (positionOffset.y > 3) {
           obj.grounded = true;
         }
-        totalX += dx;
-        totalY += dy;
+        total = total.add(positionOffset);
         count++;
       }
     }
@@ -106,17 +94,11 @@ function resolveTerrainCollisions(physicsObjects) {
       continue;
     }
 
-    let dx = totalX / count;
-    let dy = totalY / count;
-
-    let length = Math.sqrt(dx * dx + dy * dy);
-    let nx = dx / length;
-    let ny = dy / length;
-
-    let displacement = obj.radius - length;
-
-    obj.position.x -= nx * displacement * 0.3;
-    obj.position.y -= ny * displacement * 0.3;
+    let collisionPosition = total.divide(count);
+    let collisionDistance =  collisionPosition.length;
+    let collisionDirection = collisionPosition.divide(collisionDistance);
+    let displacement = obj.radius - collisionDistance;
+    obj.position = obj.position.subtract(collisionDirection.multiply(displacement * 0.3));
   }
 }
 
@@ -124,22 +106,17 @@ function resolveObjectCollisions(physicsObjects) {
   for (const first of physicsObjects) {
     for (const second of physicsObjects) {
       if (first == second) continue;
-      let dx = first.position.x - second.position.x;
-      let dy = first.position.y - second.position.y;
-
-      let distance = Math.sqrt(dx * dx + dy * dy);
+      let offset = first.position.subtract(second.position);
+      let distance = offset.length;
 
       if (distance < first.radius + second.radius) {
-        if (dy > 0) second.grounded = true;
+        if (offset.y > 0) second.grounded = true;
         let amount = first.radius + second.radius - distance;
+        let direction = offset.divide(distance);
+        let correction = direction.multiply(amount / 2);
 
-        let nx = dx / distance;
-        let ny = dy / distance;
-
-        first.position.x += nx * amount / 2;
-        first.position.y += ny * amount / 2;
-        second.position.x -= nx * amount / 2;
-        second.position.y -= ny * amount / 2;
+        first.position = first.position.add(correction);
+        second.position = second.position.subtract(correction);
       }
     }
   }

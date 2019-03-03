@@ -1,5 +1,6 @@
 import { setPixel } from "../canvasApi";
 import { shakeCamera } from "./camera";
+import Vector from "./vector";
 import { Update, DrawWorld } from "./events";
 
 const shakeAmount = 20;
@@ -41,15 +42,14 @@ Update.Subscribe(() => {
 
 DrawWorld.Subscribe(() => {
   for (let explosion of explosions) {
-    for (let x = explosion.x - explosion.r; x < explosion.x + explosion.r; x++) {
-      for (let y = explosion.y - explosion.r; y < explosion.y + explosion.r; y++) {
-        let dx = x - explosion.x;
-        let dy = y - explosion.y;
-        let dist = Math.sqrt(dx * dx + dy * dy);
-
-        if (dist <= explosion.r) {
-          setPixel(x, y, explosion.c);
-        }
+    let radius = new Vector(explosion.r, explosion.r);
+    let center = new Vector(explosion.x, explosion.y);
+    let topLeft = center.subtract(radius);
+    let bottomRight = center.add(radius);
+    for (let pixel of Vector.InRectangle(topLeft, bottomRight)) {
+      let offset = pixel.subtract(center);
+      if (offset.length <= explosion.r) {
+        setPixel(pixel.x, pixel.y, explosion.c);
       }
     }
   }

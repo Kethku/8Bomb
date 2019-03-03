@@ -64,9 +64,8 @@ export function updateBombs() {
 
     for (const object of physicsObjects) {
       // Find the distance to the object
-      let dx = object.position.x - bomb.position.x;
-      let dy = object.position.y - bomb.position.y;
-      let length = Math.sqrt(dx * dx + dy * dy);
+      let offset = object.position.subtract(bomb.position);
+      let length = offset.length;
 
       // If the object is the player, and the length is less than 3/4 of the
       // bomb radius, the player has lost.
@@ -74,8 +73,7 @@ export function updateBombs() {
 
       // Otherwise knockback the object by the distance * knockBack / length^2;
       let lengthSquared = length * length;
-      object.position.x += dx * knockBack / lengthSquared;
-      object.position.y += dy * knockBack / lengthSquared;
+      object.position = object.position.add(offset.multiply(knockBack/lengthSquared));
     }
   }
 }
@@ -83,4 +81,4 @@ export function updateBombs() {
 Update.Subscribe(() => {
   spawnBombs();
   updateBombs();
-})
+});

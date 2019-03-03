@@ -35,7 +35,7 @@ Update.Subscribe((input) => {
     if (input.i) digY -= 4;
 
     if (digX != 0 || digY != 0) {
-      dig(player.position.x + digX, player.position.y + digY, 4);
+      dig(player.position.x + digX, player.position.y + digY, 5);
     }
   }
 

@@ -1,6 +1,7 @@
 import { setPixel } from "../canvasApi";
 import { Update, DrawWorld } from "./events";
 import { cameraY } from "./camera";
+import Vector from "./vector";
 
 const panelHeight = 100;
 const panelWidth = 128;
@@ -60,15 +61,15 @@ export function colorAt(x, y) {
 }
 
 export function cutTerrain(x, y, r) {
-  for (let cx = Math.floor(x - r); cx <= x + r; cx++) {
-    for (let cy = Math.floor(y - r); cy <= y + r; cy++) {
-      let dx = cx - x;
-      let dy = cy - y;
-      let cr = Math.floor(Math.sqrt(dx * dx + dy * dy));
+  let center = new Vector(x, y);
+  let radius = new Vector(r, r);
+  let topLeft = center.subtract(radius).floor();
+  let bottomRight = center.add(radius).floor();
 
-      if (cr > r) continue;
-      setTerrainAt(cx, cy, false);
-    }
+  for (let pixel of Vector.InRectangle(topLeft, bottomRight)) {
+    let offset = center.subtract(pixel);
+    if (offset.length > r) continue;
+    setTerrainAt(pixel.x, pixel.y, false);
   }
 }
 
@@ -112,11 +113,9 @@ Update.Subscribe(() => {
 DrawWorld.Subscribe(() => {
   let top = Math.max(0, Math.floor(cameraY));
   let bottom = Math.floor(cameraY + 128);
-  for (let y = top; y < bottom; y++) {
-    for (let x = 0; x < panelWidth - 1; x++) {
-      if (terrainAt(x, y)) {
-        setPixel(x, y, colorAt(x, y));
-      }
+  for (let pixel of Vector.InRectangle(new Vector(0, top), new Vector(panelWidth, bottom))) {
+    if (terrainAt(pixel.x, pixel.y)) {
+      setPixel(pixel.x, pixel.y, colorAt(pixel.x, pixel.y));
     }
   }
 });
