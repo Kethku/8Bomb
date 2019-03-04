@@ -1,14 +1,19 @@
 import { setPixel } from "../canvasApi";
-import { Update, DrawWorld } from "./events";
+import { Reset, Update, DrawWorld } from "./events";
 import { cameraY } from "./camera";
 import Vector from "./vector";
+import { mod } from "./utils";
 
 const panelHeight = 100;
 const panelWidth = 128;
 const terrainStart = 70;
 
-let lowestPanel = 0;
-let terrain = {};
+let lowestPanel, terrain;
+
+Reset.Subscribe(() => {
+  lowestPanel = 0;
+  terrain = {};
+});
 
 export function terrainAt(x, y) {
   if (y < terrainStart) return false;
@@ -16,7 +21,7 @@ export function terrainAt(x, y) {
   let panel = terrain[panelNumber];
   let panelY = y - (panelNumber * panelHeight);
   if (panel && panelNumber != lowestPanel) {
-    return panel[panelY][x];
+    return panel[panelY][mod(x, 128)];
   }
   return false;
 }
@@ -28,9 +33,7 @@ export function setTerrainAt(x, y, value) {
   if (panel) {
     let panelY = y - (panelNumber * panelHeight);
     let row = panel[panelY];
-    if (x >= 0 && x < row.length) {
-      row[x] = value;
-    }
+    row[mod(x, 128)] = value;
   }
 }
 

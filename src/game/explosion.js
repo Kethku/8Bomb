@@ -1,13 +1,17 @@
 import { setPixel } from "../canvasApi";
 import { shakeCamera } from "./camera";
 import Vector from "./vector";
-import { Update, DrawWorld } from "./events";
+import { Reset, Update, DrawWorld } from "./events";
 
 const shakeAmount = 20;
 const startingRadius = 25;
 const animationSpeed = 3;
 
 let explosions = [];
+
+Reset.Subscribe(() => {
+  explosions = [];
+});
 
 export function newExplosion(x, y) {
   explosions.push({

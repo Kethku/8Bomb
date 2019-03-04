@@ -1,23 +1,40 @@
 import { setPixel, sprite, print, camera } from "../canvasApi";
 
 import { player } from "./player";
-import { Update, DrawWorld, DrawUI } from "./events";
+import { Reset, Update, DrawWorld, DrawUI } from "./events";
 
-export let score = 0;
+export let base, score;
+
+Reset.Subscribe(() => {
+  base = null;
+  score = 0;
+});
+
+export function shortenedScore() {
+  if (!base) return "0";
+
+  let integer = Math.floor(score);
+  let decimal = (score - integer).toString().substring(1, 4);
+  return integer + decimal;
+}
 
 Update.Subscribe(() => {
-  if (player.position.y > score) {
-    score = player.position.y;
+  if (!base && player.grounded) {
+    base = player.position.y;
+  }
+
+  if (base) {
+    if (player.position.y - base > score) {
+      score = player.position.y - base;
+    }
   }
 });
 
 DrawWorld.Subscribe(() => {
-  sprite(0, score, 1);
-  sprite(120, score, 1, 0, true);
+  sprite(0, score + (base || 0), 1);
+  sprite(120, score + (base || 0), 1, 0, true);
 });
 
 DrawUI.Subscribe(() => {
-  let scoreText = Math.max(score - 68, 0).toString();
-  if (scoreText.length > 5) scoreText = scoreText.substring(0, 5);
-  print(5, 120, scoreText, 6);
+  print(5, 120, shortenedScore(), 6);
 });

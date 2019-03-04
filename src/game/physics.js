@@ -7,7 +7,7 @@ import { terrainAt } from "./terrain";
 import Vector from "./vector";
 
 const gravity = 0.06;
-const groundFriction = 0.99;
+const groundFriction = 0.9;
 const maxSpeed = 5;
 
 export const PhysicsObjects = new PollManager0();
@@ -26,28 +26,28 @@ export function createPhysicsObject(x, y, sprite, radius = 4) {
   };
 }
 
-function* getBorderPixels() {
-  yield new Vector(-3.5, 0.5);
-  yield new Vector(-3.5, 1.5);
-  yield new Vector(-2.5, 2.5);
-  yield new Vector(-1.5, 3.5);
-  yield new Vector(-0.5, 3.5);
-  yield new Vector(0.5, 3.5);
-  yield new Vector(1.5, 3.5);
-  yield new Vector(2.5, 2.5);
-  yield new Vector(3.5, 1.5);
-  yield new Vector(3.5, 0.5);
-  yield new Vector(3.5, -0.5);
-  yield new Vector(3.5, -1.5);
-  yield new Vector(2.5, -2.5);
-  yield new Vector(1.5, -3.5);
-  yield new Vector(0.5, -3.5);
-  yield new Vector(-0.5, -3.5);
-  yield new Vector(-1.5, -3.5);
-  yield new Vector(-2.5, -2.5);
-  yield new Vector(-3.5, -1.5);
-  yield new Vector(-3.5, -0.5);
-}
+const standardBorderPixels = [
+  new Vector(-3.5, 0.5),
+  new Vector(-3.5, 1.5),
+  new Vector(-2.5, 2.5),
+  new Vector(-1.5, 3.5),
+  new Vector(-0.5, 3.5),
+  new Vector(0.5, 3.5),
+  new Vector(1.5, 3.5),
+  new Vector(2.5, 2.5),
+  new Vector(3.5, 1.5),
+  new Vector(3.5, 0.5),
+  new Vector(3.5, -0.5),
+  new Vector(3.5, -1.5),
+  new Vector(2.5, -2.5),
+  new Vector(1.5, -3.5),
+  new Vector(0.5, -3.5),
+  new Vector(-0.5, -3.5),
+  new Vector(-1.5, -3.5),
+  new Vector(-2.5, -2.5),
+  new Vector(-3.5, -1.5),
+  new Vector(-3.5, -0.5),
+];
 
 function updateVelocities(physicsObjects) {
   for (const obj of physicsObjects) {
@@ -65,12 +65,14 @@ function updateVelocities(physicsObjects) {
 
     obj.position = obj.position.add(velocity);
 
-    if (obj.position.x - obj.radius < 0) {
-      obj.position.x = obj.radius;
+    if (obj.position.x < 0) {
+      obj.previous.x += 128;
+      obj.position.x += 128;
     }
 
-    if (obj.position.x + obj.radius > 128) {
-      obj.position.x = 128 - obj.radius;
+    if (obj.position.x >= 128) {
+      obj.previous.x -= 128;
+      obj.position.x -= 128;
     }
   }
 }
@@ -79,7 +81,7 @@ function resolveTerrainCollisions(physicsObjects) {
   for (const obj of physicsObjects) {
     let total = Vector.zero;
     let count = 0;
-    for (let positionOffset of getBorderPixels()) {
+    for (let positionOffset of standardBorderPixels) {
       let testPosition = obj.position.add(positionOffset.floor()).floor();
 
       if (terrainAt(testPosition.x, testPosition.y)) {

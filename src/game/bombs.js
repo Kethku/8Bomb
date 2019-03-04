@@ -3,14 +3,18 @@ import { newExplosion } from "./explosion";
 import { player } from "./player";
 import { score } from "./score";
 import { createPhysicsObject, getPhysicsObjects, PhysicsObjects } from "./physics";
-import { Update } from "./events";
+import { Reset, Update } from "./events";
 
 const fuzeTime = 100;
 const fuzeSpeed = 0.75;
 const bombRadius = 30;
 const knockBack = 50;
 
-let bombs = [];
+let bombs;
+
+Reset.Subscribe(() => {
+  bombs = [];
+});
 
 PhysicsObjects.Subscribe(() => bombs);
 
@@ -69,7 +73,7 @@ export function updateBombs() {
 
       // If the object is the player, and the length is less than 3/4 of the
       // bomb radius, the player has lost.
-      if (object == player && length < bombRadius * 0.75) location.reload();
+      if (object == player && length < bombRadius * 0.75) player.dead = true;
 
       // Otherwise knockback the object by the distance * knockBack / length^2;
       let lengthSquared = length * length;

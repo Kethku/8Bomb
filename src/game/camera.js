@@ -1,16 +1,22 @@
 import { player } from "./player";
-import { Update } from "./events";
+import { Reset, Update } from "./events";
 
 const cameraMomentum = 0.8;
 const cameraLag = 0.2;
 const shakeFalloff = 0.7;
 
-let previousCameraPosition = 0;
-let cameraPosition = 0;
-let shake = 0;
+let previousCameraPosition, cameraPosition, shake;
 
-export let cameraY = 0;
-export let cameraX = 0;
+export let cameraX, cameraY;
+
+Reset.Subscribe(() => {
+  previousCameraPosition = 0;
+  cameraPosition = 0;
+  shake = 0;
+
+  cameraY = 0;
+  cameraX = 0;
+});
 
 export function shakeCamera(amount) {
   shake = amount;
