@@ -21,6 +21,19 @@ const triplets = [
   [8, 20, 30]
 ];
 
+function int (i) {
+  let values = triplets[i % triplets.length];
+  return (255 << 24) |
+    (values[2] << 16) |
+    (values[1] << 8) |
+    values[0];
+}
+
+let intLookup = {};
+for (let i = 0; i < 8; i++) {
+  intLookup[int(i)] = i;
+}
+
 // const hexes = [
 //   '#f6d6bd',
 //   '#c3a38a',
@@ -36,12 +49,15 @@ const colors = {
   rgb (i) {
     return rgbs[i % rgbs.length];
   },
+
   triplet (i) {
     return triplets[i % triplets.length];
   },
 
+  int,
+
   // NOTE: if triplet isn't a color in the pallet, this will return undefined.
-  lookup (triplet) {
+  lookupTriplet (triplet) {
     for (let i = 0; i < triplets.length; i++) {
       let current = triplets[i];
       if (current[0] === triplet[0] &&
@@ -51,6 +67,10 @@ const colors = {
       }
     }
     return undefined;
+  },
+
+  lookupInt (int) {
+    return intLookup[i];
   }
 }
 

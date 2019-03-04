@@ -47,9 +47,9 @@ export function colorAt(x, y) {
   for (let stone of panel.stones) {
     let dx = stone.x - x;
     let dy = stone.y - panelY;
-    let distance = Math.sqrt(dx * dx + dy * dy);
+    let distanceSquared = dx * dx + dy * dy;
 
-    if (distance < stone.r) {
+    if (distanceSquared < stone.r * stone.r) {
       return stone.c;
     }
   }

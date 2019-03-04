@@ -4,7 +4,7 @@ import Vector from "./vector";
 import { Reset, Update, DrawWorld } from "./events";
 
 const shakeAmount = 20;
-const startingRadius = 25;
+const startingRadius = 20;
 const animationSpeed = 3;
 
 let explosions = [];

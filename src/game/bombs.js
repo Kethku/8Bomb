@@ -7,8 +7,8 @@ import { Reset, Update } from "./events";
 
 const fuzeTime = 100;
 const fuzeSpeed = 0.75;
-const bombRadius = 30;
-const knockBack = 50;
+const bombRadius = 25;
+const knockBack = 30;
 
 let bombs;
 

@@ -1,5 +1,5 @@
 import {readFileSync} from 'fs';
-
+import { drawPixels } from "./canvasApi";
 import { initialState, draw, update } from "./game/game";
 
 let currentKeys = new Set();
@@ -44,6 +44,7 @@ function loop() {
 
   update(state, input);
   draw(state);
+  drawPixels();
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);

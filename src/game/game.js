@@ -4,10 +4,6 @@ import { clear, camera } from "../canvasApi";
 import { Reset, Update, DrawWorld, DrawUI } from "./events";
 import { cameraX, cameraY } from "./camera";
 
-Number.prototype.mod = function(n) {
-  return ((this%n)+n)%n;
-};
-
 import "./bombs";
 import "./camera";
 import "./explosion";

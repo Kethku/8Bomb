@@ -6,7 +6,6 @@ const cameraLag = 0.2;
 const shakeFalloff = 0.7;
 
 let previousCameraPosition, cameraPosition, shake;
-
 export let cameraX, cameraY;
 
 Reset.Subscribe(() => {

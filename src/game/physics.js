@@ -7,7 +7,7 @@ import { terrainAt } from "./terrain";
 import Vector from "./vector";
 
 const gravity = 0.06;
-const groundFriction = 0.9;
+const groundFriction = 0.95;
 const maxSpeed = 5;
 
 export const PhysicsObjects = new PollManager0();
@@ -129,17 +129,24 @@ DrawWorld.Subscribe(() => {
 
   for (let obj of physicsObjects) {
     sprite(obj.position.x - obj.radius, obj.position.y - obj.radius, obj.sprite);
+    if (obj.position.x < obj.radius) {
+      sprite(obj.position.x - obj.radius + 128, obj.position.y - obj.radius, obj.sprite);
+    }
+
+    if (obj.position.x + obj.radius >= 128) {
+      sprite(obj.position.x - obj.radius - 128, obj.position.y - obj.radius, obj.sprite);
+    }
   }
 });
 
 Update.Subscribe(() => {
   let physicsObjects = getPhysicsObjects();
 
+  updateVelocities(physicsObjects);
   for (let object of physicsObjects) {
     object.grounded = false;
   }
 
-  updateVelocities(physicsObjects);
   for (let i = 0; i < 5; i++) {
     resolveTerrainCollisions(physicsObjects);
   }
