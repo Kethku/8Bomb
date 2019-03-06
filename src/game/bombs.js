@@ -4,11 +4,18 @@ import { player } from "./player";
 import { score } from "./score";
 import { createPhysicsObject, getPhysicsObjects, PhysicsObjects } from "./physics";
 import { Reset, Update } from "./events";
+import Vector from "./vector";
 
 const fuzeTime = 100;
 const fuzeSpeed = 0.75;
 const bombRadius = 25;
 const knockBack = 30;
+
+const wrappedOffsets = [
+  new Vector(0, 0),
+  new Vector(128, 0),
+  new Vector(-128, 0)
+];
 
 let bombs;
 
@@ -67,17 +74,20 @@ export function updateBombs() {
     newExplosion(bomb.position.x, bomb.position.y);
 
     for (const object of physicsObjects) {
-      // Find the distance to the object
-      let offset = object.position.subtract(bomb.position);
-      let length = offset.length;
+      for (let wrappedOffset of wrappedOffsets) {
+        let wrappedPosition = bomb.position.add(wrappedOffset);
+        // Find the distance to the object
+        let offset = object.position.subtract(wrappedPosition);
+        let length = offset.length;
 
-      // If the object is the player, and the length is less than 3/4 of the
-      // bomb radius, the player has lost.
-      if (object == player && length < bombRadius * 0.75) player.dead = true;
+        // If the object is the player, and the length is less than 3/4 of the
+        // bomb radius, the player has lost.
+        if (object == player && length < bombRadius * 0.75) player.dead = true;
 
-      // Otherwise knockback the object by the distance * knockBack / length^2;
-      let lengthSquared = length * length;
-      object.position = object.position.add(offset.multiply(knockBack/lengthSquared));
+        // Otherwise knockback the object by the distance * knockBack / length^2;
+        let lengthSquared = length * length;
+        object.position = object.position.add(offset.multiply(knockBack/lengthSquared));
+      }
     }
   }
 }

@@ -10,6 +10,12 @@ const gravity = 0.06;
 const groundFriction = 0.95;
 const maxSpeed = 5;
 
+const wrappedOffsets = [
+  new Vector(0, 0),
+  new Vector(128, 0),
+  new Vector(-128, 0)
+];
+
 export const PhysicsObjects = new PollManager0();
 
 export function getPhysicsObjects() {
@@ -108,17 +114,20 @@ function resolveObjectCollisions(physicsObjects) {
   for (const first of physicsObjects) {
     for (const second of physicsObjects) {
       if (first == second) continue;
-      let offset = first.position.subtract(second.position);
-      let distance = offset.length;
+      for (let wrappedOffset of wrappedOffsets) {
+        let wrappedFirstPosition = first.position.add(wrappedOffset);
+        let offset = wrappedFirstPosition.subtract(second.position);
+        let distance = offset.length;
 
-      if (distance < first.radius + second.radius) {
-        if (offset.y > 0) second.grounded = true;
-        let amount = first.radius + second.radius - distance;
-        let direction = offset.divide(distance);
-        let correction = direction.multiply(amount / 2);
+        if (distance < first.radius + second.radius) {
+          if (offset.y > 0) second.grounded = true;
+          let amount = first.radius + second.radius - distance;
+          let direction = offset.divide(distance);
+          let correction = direction.multiply(amount / 2);
 
-        first.position = first.position.add(correction);
-        second.position = second.position.subtract(correction);
+          first.position = first.position.add(correction);
+          second.position = second.position.subtract(correction);
+        }
       }
     }
   }

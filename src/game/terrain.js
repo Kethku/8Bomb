@@ -87,12 +87,13 @@ function createPanel() {
     panel.push(row);
   }
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 30; i++) {
     if (Math.random() * 100 < 40) {
+      let r = Math.random() * 5;
       stones.push({
         x: Math.random() * 128,
-        y: Math.random() * panelHeight,
-        r: Math.random() * 5,
+        y: Math.random() * (panelHeight - r * 2) + r,
+        r,
         c: Math.floor(Math.random() * 3) + 4
       });
     }

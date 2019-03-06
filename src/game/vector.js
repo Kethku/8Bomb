@@ -35,6 +35,10 @@ class Vector {
   floor() {
     return new Vector(Math.floor(this.x), Math.floor(this.y));
   }
+
+  ceil() {
+    return new Vector(Math.ceil(this.x), Math.ceil(this.y));
+  }
 }
 
 Vector.zero = new Vector(0, 0);

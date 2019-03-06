@@ -4,7 +4,6 @@ import isNil from 'lodash/isNil';
 import colors from './colors';
 import alphabet from './alphabet';
 import sprites from "./sprites";
-import printText from "./print";
 
 let canvas = document.getElementById('game');
 let ctx = canvas.getContext('2d');
@@ -27,6 +26,13 @@ export function drawPixels() {
 export function camera(x = 0, y = 0) {
   _cameraX = Math.floor(x);
   _cameraY = Math.floor(y);
+}
+
+export function getPixel(x, y) {
+  x = Math.floor(x - _cameraX);
+  y = Math.floor(y - _cameraY);
+  if (x < 0 || x >= 128 || y < 0 || y >= 128) return 7;
+  return colors.lookupInt(pixelIntegers[y * 128 + x]);
 }
 
 export function setPixel(x, y, c = 0) {
@@ -72,6 +78,149 @@ export function print(x, y, letters, c = 0) {
       }
     }
     currentX += letterWidth + 1;
+  }
+}
+
+export function line(x1, y1, x2, y2, c = 0) {
+  let steep = false;
+
+  if (Math.abs(x1 - x2) < Math.abs(y1 - y2)) {
+    ;[x1, y1] = [y1, x1]
+    ;[x2, y2] = [y2, x2]
+    steep = true;
+  }
+  if (x1 > x2) {
+    ;[x1, x2] = [x2, x1]
+    ;[y1, y2] = [y2, y1]
+  }
+
+  const dx = x2 - x1
+  const dy = y2 - y1
+  const derror = Math.abs(dy) * 2
+  let error = 0
+  let y = y1
+
+  for (let x = x1; x <= x2; x++) {
+    if (steep) {
+      setPixel(y, x, c);
+    } else {
+      setPixel(x, y, c);
+    }
+    error += derror
+    if (error > dx) {
+      if (y2 > y1) {
+        y++
+      } else {
+        y--
+      }
+      error -= dx * 2
+    }
+  }
+}
+
+const circle = ({ cx, cy, radius, color, onlyStroke }) => {
+  let x = radius - 1
+  let y = 0
+  let dx = 1
+  let dy = 1
+  let err = dx - (radius << 1)
+
+  const drawLine = ({ x0, x1, y }) => {
+    line(x0, y, x1, y, color)
+  }
+
+  if (radius === 2) {
+    setPixel(cx + 1, cy, color)
+    setPixel(cx - 1, cy, color)
+    setPixel(cx, cy + 1, color)
+    setPixel(cx, cy - 1, color)
+    if (!onlyStroke) {
+      setPixel(cx, cy, color)
+    }
+  } else if (radius === 3) {
+    drawLine({ x0: cx - 2, x1: cx + 2, y: cy - 2 })
+    drawLine({ x0: cx - 2, x1: cx + 2, y: cy + 2 })
+    if (onlyStroke) {
+      setPixel(cx + 2, cy - 1, color)
+      setPixel(cx + 2, cy, color)
+      setPixel(cx + 2, cy + 1, color)
+      setPixel(cx - 2, cy - 1, color)
+      setPixel(cx - 2, cy, color)
+      setPixel(cx - 2, cy + 1, color)
+    } else {
+      drawLine({ x0: cx - 3, x1: cx + 3, y: cy - 1 })
+      drawLine({ x0: cx - 3, x1: cx + 3, y: cy })
+      drawLine({ x0: cx - 3, x1: cx + 3, y: cy + 1 })
+    }
+  } else {
+    while (x >= y) {
+      if (onlyStroke) {
+        setPixel(cx + x, cy + y, color)
+        setPixel(cx - x, cy + y, color)
+        setPixel(cx + y, cy + x, color)
+        setPixel(cx - y, cy + x, color)
+        setPixel(cx + x, cy - y, color)
+        setPixel(cx - x, cy - y, color)
+        setPixel(cx + y, cy - x, color)
+        setPixel(cx - y, cy - x, color)
+      } else {
+        drawLine({ x0: cx + y, x1: cx - y, y: cy - x })
+        drawLine({ x0: cx + x, x1: cx - x, y: cy - y })
+        drawLine({ x0: cx + x, x1: cx - x, y: cy + y })
+        drawLine({ x0: cx + y, x1: cx - y, y: cy + x })
+      }
+      if (err <= 0) {
+        y++
+        err += dy
+        dy += 2
+      }
+      if (err > 0) {
+        x--
+        dx += 2
+        err += dx - (radius << 1)
+      }
+    }
+  }
+}
+
+export function circStroke(x, y, r, c = 0) {
+  circle({
+    cx: Math.floor(x),
+    cy: Math.floor(y),
+    radius: Math.floor(r),
+    color: c,
+    onlyStroke: true
+  })
+}
+
+export function circFill(x, y, r, c = 0) {
+  circle({
+    cx: Math.floor(x),
+    cy: Math.floor(y),
+    radius: Math.floor(r),
+    color: c
+  })
+}
+
+export function rectStroke(x, y, w, h, c = 0) {
+  let left = x;
+  let right = x + w - 1;
+  let top = y;
+  let bottom = y + h - 1;
+  line(left, top, right, top, c)
+  line(left, bottom, right, bottom, c)
+  line(left, top, left, bottom, c)
+  line(right, top, right, bottom, c)
+}
+
+export function rectFill(x, y, w, h, c = 0) {
+  let left = x;
+  let right = x + w - 1;
+  let top = y;
+  let bottom = y + h - 1;
+
+  for (let rectX = left; rectX <= right; rectX++) {
+    line(rectX, top, rectX, bottom, c)
   }
 }
 
